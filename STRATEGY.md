@@ -15,7 +15,7 @@ All of these must hold on the same slot:
 - The coin is at least 30 slots old.
 - The launch group (wallets that bought in the first 2 slots) has already sold more than 15% of those tokens.
 
-The last filter was decisive. Coins whose launch group still held at least 85% produced 7 of the 8 worst rugs in the dev window: their exit is the crash.
+The last filter was decisive: coins failing it produced 7 of the 8 worst rugs in the dev window.
 
 ## Size
 
@@ -32,11 +32,11 @@ All measured on recorded curve reserves:
 - Trail: 12 SOL off the peak until reserves have gained 25 SOL, then 25 SOL off the peak.
 - Timeout: 1,500 slots without reaching the 25 SOL gain.
 
-A sell the curve refuses for holding too little SOL is halved and sent again.
+A sell refused by a drained curve is halved and resent.
 
 ## Guardrail
 
-From hour 16, 0.015 SOL probe round trips fill any gap to 24 counted coins. With no entry signal at all, probes alone reached 24 for 0.022 SOL.
+From hour 16, 0.015 SOL probe round trips fill any gap to 24 counted coins (24 reached with no entry signal, for 0.022 SOL).
 
 ## Backtest
 
@@ -53,9 +53,6 @@ Kit engine and scorer on the dev window, through the bot process.
 | 30 random halves of the coins | mean +9.824, p10 +0.925, 2 lost money, worst drawdown 30.9% |
 | 9 start hours (0 to 18) | mean +10.39, worst +5.86, worst drawdown 37% |
 | 24 other order-failure keys | mean +21.04, worst +16.04, worst drawdown 25.4% |
-
-Two runs give identical action logs.
-
 ## Tried and rejected
 
 About 55,000 rule cells on price, flow, wallet copying, sell shocks and reclaims came first. None held up across coin folds.
