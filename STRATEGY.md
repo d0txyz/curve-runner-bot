@@ -57,7 +57,7 @@ Two runs give byte-identical action logs.
 
 ## Tried and rejected
 
-About 55,000 rule cells on price, flow, wallet copying, sell shocks, pyramiding and reclaims came first. None stayed positive across coin folds and both halves of the day.
+About 55,000 rule cells on price, flow, wallet copying, sell shocks, pyramiding and reclaims came first. None held up across coin folds.
 
 Ideas from the public dev leader (icantcodefyi/pumpfun-graduation-bot) were tested here, 256 cells: re-entry, a buy volume trigger, an age limit, a top-5 buyer cap, wider stops and full take-profit. None helped. Selling half at 72 SOL and the 4 SOL size carried over.
 
