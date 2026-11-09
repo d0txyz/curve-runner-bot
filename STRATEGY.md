@@ -21,7 +21,7 @@ The last filter was decisive. Coins whose launch group still held at least 85% p
 
 25% of equity per coin, at most 3 SOL, built over up to 15 slots inside the 1% reserve cap. One entry per coin. Buy slippage limit 10%.
 
-An exposure guard sizes each new position so that losing every open position entirely would still leave equity within 45% of its peak. An equity brake stops new entries at a 35% drawdown.
+An exposure guard sizes each new position so that losing every open position entirely leaves equity within 45% of its peak. A brake stops new entries at a 35% drawdown.
 
 ## Exit
 
@@ -52,7 +52,7 @@ Kit engine and scorer on the 24-hour dev window, run through the bot process. Th
 | Without the top 3 coins | +1.96 SOL |
 | 30 random halves of the coins | mean +6.608, p10 +0.929, median +6.330, 2 lost money, all compliant |
 
-The parameters sit on a plateau: 762 of 768 cells of the filter grid and all 1,728 cells of the sizing grid made money, and none broke the 50% drawdown limit. Two runs give byte-identical action logs.
+The parameters sit on a plateau: 762 of 768 filter cells and all 1,728 sizing cells made money, none above 50% drawdown. Two runs give byte-identical action logs.
 
 ## Tried and rejected
 
@@ -62,4 +62,4 @@ A second round tested ideas from the public dev leader (icantcodefyi/pumpfun-gra
 
 ## Limits
 
-The result is concentrated: a few runners make nearly all the profit. The launch-group filter was found on the same dev window it is tested on. The final is one 24-hour window, so a day with few runners can end near zero or slightly negative.
+A few runners make nearly all the profit, and the launch-group filter was found on the same window it is tested on. A final day with few runners can end near zero or slightly negative.
