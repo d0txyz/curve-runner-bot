@@ -19,15 +19,15 @@ The last filter was decisive. Coins whose launch group still held at least 85% p
 
 ## Size
 
-25% of equity per coin, at most 3 SOL, built over up to 15 slots inside the 1% reserve cap. One entry per coin. Buy slippage limit 10%.
+4 SOL per coin, bought in tranches inside the 1% reserve cap over up to 15 slots. The build ends early if reserves fall 3 SOL under entry, so coins that fail at once stay small. One entry per coin.
 
-An exposure guard sizes each new position so that losing every open position entirely leaves equity within 45% of its peak. A brake stops new entries at a 35% drawdown.
+An exposure guard sizes each new position so that losing every open position entirely leaves equity within 40% of its peak. Size therefore shrinks after losses, and trading does not stop.
 
 ## Exit
 
 All measured on recorded curve reserves:
 
-- Take profit: half the position is sold when reserves reach 72 SOL. The rest is held for completion.
+- Take profit: half is sold when reserves reach 72 SOL. The rest is held for completion.
 - Stop: reserves fall 8 SOL below entry.
 - Trail: 12 SOL off the peak until reserves have gained 25 SOL, then 25 SOL off the peak.
 - Timeout: 1,500 slots without reaching the 25 SOL gain.
@@ -44,22 +44,25 @@ Kit engine and scorer on the 24-hour dev window, run through the bot process. Th
 
 | Measure | Result |
 | --- | --- |
-| Net PnL | +14.910 SOL |
-| 90% interval | +2.186 to +30.604 |
-| Max drawdown | 12.8% |
+| Net PnL | +23.779 SOL |
+| 90% interval | +5.113 to +45.952 |
+| Max drawdown | 17.7% |
 | Counted coins | 30 |
-| Net PnL with fees doubled | +13.456 SOL |
-| Without the top 3 coins | +1.96 SOL |
-| 30 random halves of the coins | mean +6.608, p10 +0.929, median +6.330, 2 lost money, all compliant |
+| Net PnL with fees doubled | +21.624 SOL |
+| Without the top 3 coins | +6.75 SOL |
+| 30 random halves of the coins | mean +9.824, p10 +0.925, 2 lost money, worst drawdown 30.9% |
+| 9 start hours (0 to 18) | mean +10.39, worst +5.86, worst drawdown 37% |
 
-The parameters sit on a plateau: 762 of 768 filter cells and all 1,728 sizing cells made money, none above 50% drawdown. Two runs give byte-identical action logs.
+Two runs give byte-identical action logs.
 
 ## Tried and rejected
 
 About 55,000 rule cells on price, flow, wallet copying, sell shocks, pyramiding and reclaims were tested first. None stayed positive across coin folds and both halves of the day.
 
-A second round tested ideas from the public dev leader (icantcodefyi/pumpfun-graduation-bot) inside this bot, 256 cells: re-entry after a stop, a gross buy volume trigger, an age limit, a top-5 buyer share cap, wider stops and full take-profit at 72 to 80 SOL. None improved the result. Two did carry over: selling half at 72 SOL and a larger size.
+Ideas from the public dev leader (icantcodefyi/pumpfun-graduation-bot) were tested inside this bot, 256 cells: re-entry after a stop, a gross buy volume trigger, an age limit, a top-5 buyer share cap, wider stops and full take-profit. None helped. Selling half at 72 SOL and the 4 SOL size did carry over.
+
+A hard brake at a 35% drawdown was dropped: started at hour 12, it locked the bot out after an early losing run and it missed every later winner (-1.80 SOL against +5.86 with the guard).
 
 ## Limits
 
-A few runners make nearly all the profit, and the launch-group filter was found on the same window it is tested on. A final day with few runners can end near zero or slightly negative.
+A few runners make most of the profit, and the launch-group filter was found on the same window it is tested on. A day that opens with a losing run draws down 35 to 37% before recovering. A final day with few runners can end near zero or negative.

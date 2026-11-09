@@ -15,6 +15,9 @@ export interface Config {
   maxInsider: number;
   // Size: share of equity per coin, limited to maxSol SOL. Built over at most buildSlots slots.
   sizeFrac: number; maxSol: number; buildSlots: number; buySlipBps: number;
+  // The build ends when reserves fall buildDip SOL under entry. retryBuys 1 sends a failed or
+  // refused tranche again; 0 ends the build on it.
+  buildDip: number; retryBuys: number;
   // Exit on recorded reserves: stopR below entry, tight trail1 from peak until reserves gain gainX
   // over entry, then the wide trail2. timeOut slots without reaching gainX ends the trade.
   stopR: number; gainX: number; trail1: number; trail2: number; timeOut: number;
@@ -31,7 +34,7 @@ export interface Config {
   brakeDd: number;
   // Exposure guard: open positions plus a new one are sized so that losing lossShare of all of
   // them at once still leaves equity within ddCap of its peak (ddCap 1 turns the guard off).
-  ddCap: number; lossShare: number;
+  ddCap: number; lossShare: number; minRoom: number;
   // Guardrail probes: from probeHour on, tiny round trips fill the gap to minCoins counted coins.
   minCoins: number; probeHour: number; probeSol: number; probeHold: number; probeR: number;
 }
@@ -39,13 +42,14 @@ export interface Config {
 export const DEFAULTS: Config = {
   rLo: 30, rHi: 70, dR: 14, minBuyers: 25, wSlots: 30,
   minHolders: 40, minAge: 30, maxInsider: 0.85,
-  sizeFrac: 0.25, maxSol: 3, buildSlots: 15, buySlipBps: 1000,
+  sizeFrac: 1, maxSol: 4, buildSlots: 15, buySlipBps: 1000,
+  buildDip: 3, retryBuys: 0,
   stopR: 8, gainX: 25, trail1: 12, trail2: 25, timeOut: 1500,
   tp1R: 72, tpFrac: 0.5, tp2R: 1000,
   volMin: 0, volLo: 45, maxAge: 1e9, top5Max: 1,
   reentries: 0,
-  brakeDd: 0.35,
-  ddCap: 0.45, lossShare: 1,
+  brakeDd: 0.45,
+  ddCap: 0.4, lossShare: 1, minRoom: 0.25,
   minCoins: 24, probeHour: 16, probeSol: 0.015, probeHold: 40, probeR: 6,
 };
 
@@ -88,11 +92,13 @@ export class Strategy {
   }
 
   private settle(state: BotState, batch: Batch): void {
+    const again = new Set<string>();
     for (const f of batch.fills) {
       const p = this.open.get(f.mint);
       if (p === undefined) continue;
       if (f.side === 'buy') {
         if (f.status === 'filled') p.paid += BigInt(f.quote_lamports);
+        else if (this.cfg.retryBuys > 0) again.add(f.mint);
         else p.target = p.spent; // a refused or failed buy ends the build
       } else {
         // A sell that failed is sent again on the next batch; one the curve refused for holding
@@ -105,6 +111,14 @@ export class Strategy {
     }
     const busy = new Set<string>();
     for (const q of state.pending.values()) busy.add(q.order.mint);
+    // A tranche that did not fill goes back into what is left to buy: spent becomes what was
+    // paid plus the buys still in flight.
+    for (const mint of again) {
+      const p = this.open.get(mint)!;
+      let flying = 0n;
+      for (const q of state.pending.values()) if (q.order.mint === mint && q.order.side === 'buy') flying += BigInt(q.order.quote_lamports);
+      p.spent = p.paid + flying;
+    }
     for (const [mint, p] of this.open) {
       if (state.positions.has(mint) || busy.has(mint)) continue;
       const c = this.coin(mint);
@@ -245,7 +259,7 @@ export class Strategy {
     for (const [mint, p] of this.open) {
       if (p.selling || p.spent >= p.target || orders.length >= caps.max_orders_per_batch) continue;
       const c = this.coin(mint);
-      if (c.done || batch.slot - p.start > cfg.buildSlots || c.r < p.entryR - 1) { p.target = p.spent; continue; }
+      if (c.done || batch.slot - p.start > cfg.buildSlots || c.r < p.entryR - cfg.buildDip) { p.target = p.spent; continue; }
       const cap = state.maxBuyLamports(mint);
       let amount = p.target - p.spent;
       if (amount > cap) amount = cap;
@@ -255,7 +269,7 @@ export class Strategy {
       free -= amount + tx;
     }
 
-    if (braked) return orders;
+    // The brake blocks real entries only: probes keep running so the 20-coin bar is still met.
     let atRisk = 0n;
     for (const p of this.open.values()) if (!p.probe) atRisk += p.target;
     let room = (Number(equity) - (1 - cfg.ddCap) * Number(this.peakEquity)) / cfg.lossShare - Number(atRisk);
@@ -269,7 +283,7 @@ export class Strategy {
       const { rise, buyers, vol } = this.flow(c, batch.slot);
       const age = batch.slot - c.first;
       const pushed = rise >= cfg.dR || (cfg.volMin > 0 && vol >= cfg.volMin && c.r >= cfg.volLo);
-      const hot = c.r >= cfg.rLo && c.r <= cfg.rHi && pushed && buyers >= cfg.minBuyers && c.holders >= cfg.minHolders && age >= cfg.minAge && age <= cfg.maxAge && this.insiderLeft(c) < cfg.maxInsider && (cfg.top5Max >= 1 || this.top5(c) <= cfg.top5Max);
+      const hot = !braked && c.r >= cfg.rLo && c.r <= cfg.rHi && pushed && buyers >= cfg.minBuyers && c.holders >= cfg.minHolders && age >= cfg.minAge && age <= cfg.maxAge && this.insiderLeft(c) < cfg.maxInsider && (cfg.top5Max >= 1 || this.top5(c) <= cfg.top5Max);
       const probe = !hot && !c.probed && c.entries === 0 && behind && slots > 1 && c.r >= cfg.probeR && rise > 0;
       if (!hot && !probe) continue;
       const cap = state.maxBuyLamports(mint);
@@ -277,8 +291,9 @@ export class Strategy {
       const most = toLamports(cfg.maxSol);
       if (target > most) target = most;
       if (!probe && cfg.ddCap < 1 && Number(target) > room) {
-        // The guard leaves less than a full position: take what fits, or skip a sliver.
-        if (room * 4 < Number(target)) continue;
+        // The guard leaves less than a full position: take what fits, so size shrinks as equity
+        // falls from its peak instead of trading stopping. Under minRoom SOL the coin is skipped.
+        if (room < cfg.minRoom * SOL) continue;
         target = BigInt(Math.floor(room));
       }
       const amount = target > cap ? cap : target;

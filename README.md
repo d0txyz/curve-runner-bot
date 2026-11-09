@@ -35,6 +35,10 @@ From inside this repository:
 node tools/stress.ts 30 0.5
 ```
 
+```bash
+node tools/origins.ts
+```
+
 ## License
 
 MIT, see `LICENSE`.
