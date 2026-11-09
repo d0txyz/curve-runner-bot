@@ -2,7 +2,7 @@
 
 ## Idea
 
-Most pump.fun coins die, and fees plus a 2-slot delay destroy any bot that trades often. This bot trades about 30 coins a day: it waits for broad demand, holds the coins that keep running toward graduation, and cuts the rest fast.
+Most pump.fun coins die, and fees plus a 2-slot delay punish frequent trading. This bot trades about 30 coins a day: it waits for broad demand, holds coins that keep running toward graduation, and cuts the rest fast.
 
 ## Entry
 
@@ -36,11 +36,11 @@ A sell the curve refuses for holding too little SOL is halved and sent again.
 
 ## Guardrail
 
-From hour 16, if fewer than 24 coins are on track to count, 0.015 SOL probe round trips fill the gap. On a simulated day with no entry signal, probes alone gave 24 counted coins for 0.022 SOL.
+From hour 16, 0.015 SOL probe round trips fill any gap to 24 counted coins. With no entry signal at all, probes alone reached 24 for 0.022 SOL.
 
 ## Backtest
 
-Kit engine and scorer on the 24-hour dev window, run through the bot process. The local grader first reproduced the house bots' board scores.
+Kit engine and scorer on the dev window, through the bot process.
 
 | Measure | Result |
 | --- | --- |
@@ -57,11 +57,11 @@ Two runs give byte-identical action logs.
 
 ## Tried and rejected
 
-About 55,000 rule cells on price, flow, wallet copying, sell shocks, pyramiding and reclaims were tested first. None stayed positive across coin folds and both halves of the day.
+About 55,000 rule cells on price, flow, wallet copying, sell shocks, pyramiding and reclaims came first. None stayed positive across coin folds and both halves of the day.
 
-Ideas from the public dev leader (icantcodefyi/pumpfun-graduation-bot) were tested inside this bot, 256 cells: re-entry after a stop, a gross buy volume trigger, an age limit, a top-5 buyer share cap, wider stops and full take-profit. None helped. Selling half at 72 SOL and the 4 SOL size did carry over.
+Ideas from the public dev leader (icantcodefyi/pumpfun-graduation-bot) were tested here, 256 cells: re-entry, a buy volume trigger, an age limit, a top-5 buyer cap, wider stops and full take-profit. None helped. Selling half at 72 SOL and the 4 SOL size carried over.
 
-A hard brake at a 35% drawdown was dropped: started at hour 12, it locked the bot out after an early losing run and it missed every later winner (-1.80 SOL against +5.86 with the guard).
+A hard brake at a 35% drawdown was dropped: started at hour 12, it locked the bot out after an early losing run (-1.80 SOL against +5.86 with the guard).
 
 ## Limits
 
