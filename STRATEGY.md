@@ -40,7 +40,7 @@ From hour 16, if fewer than 24 coins are on track to count, 0.015 SOL probe roun
 
 ## Backtest
 
-Kit engine and scorer on the 24-hour dev window, run through the bot process. The local grader first reproduced the house bots' board scores (sniper -0.500, reversion -3.705, momentum -9.470).
+Kit engine and scorer on the 24-hour dev window, run through the bot process. The local grader first reproduced the house bots' board scores.
 
 | Measure | Result |
 | --- | --- |
