@@ -39,6 +39,10 @@ node tools/stress.ts 30 0.5
 node tools/origins.ts
 ```
 
+```bash
+node tools/failkeys.ts 24
+```
+
 ## License
 
 MIT, see `LICENSE`.

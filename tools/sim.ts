@@ -16,9 +16,11 @@ const slots = [...created.values()].sort((a, b) => a - b);
 const MID = slots[slots.length >> 1];
 const fold = (m: string) => parseInt(createHash('sha256').update('salt' + m).digest('hex').slice(0, 8), 16) % 4;
 
-export function simulate(cfg: Partial<Config>) {
+// failKey picks which 2% of orders fail. Left out, it is the public dev key the board uses; the
+// final window uses a secret one, so tools/failkeys.ts replays the day under many keys.
+export function simulate(cfg: Partial<Config>, failKey?: string) {
   const hello = helloFor(ds.seed, ds.sample);
-  const engine = new ReplayEngine(ds.dataset, hello, { schemaCheck: false });
+  const engine = new ReplayEngine(ds.dataset, hello, failKey === undefined ? { schemaCheck: false } : { schemaCheck: false, failKey });
   const state = new BotState(hello as any);
   const strat = new Strategy(cfg);
   for (let b = engine.nextBatch(); b !== null; b = engine.nextBatch()) {

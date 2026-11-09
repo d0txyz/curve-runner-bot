@@ -140,12 +140,15 @@ export class Strategy {
     const moved = new Set<string>();
     const keep = this.cfg.wSlots + 2;
     for (const e of batch.events) {
-      if (this.firstTime < 0) this.firstTime = e.block_time;
-      this.lastTime = e.block_time;
+      // block_time may be missing on a record: the window clock only moves on records that carry it.
+      if (e.block_time !== null && e.block_time !== undefined) {
+        if (this.firstTime < 0) this.firstTime = e.block_time;
+        this.lastTime = e.block_time;
+      }
       if (e.event === 'CompleteEvent') { this.coin(e.mint).done = true; continue; }
       if (e.event !== 'TradeEvent') continue;
       const c = this.coin(e.mint);
-      c.r = Number(e.real_sol_reserves) / SOL;
+      c.r = Number(e.real_quote_reserves) / SOL; // the quote fields are the ones the kit says to read
       if (c.first < 0) c.first = e.slot;
       if (e.is_buy && e.slot - c.first <= 2) {
         c.early.set(e.user, (c.early.get(e.user) ?? 0) + Number(e.token_amount));

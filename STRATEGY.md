@@ -52,17 +52,18 @@ Kit engine and scorer on the dev window, through the bot process.
 | Without the top 3 coins | +6.75 SOL |
 | 30 random halves of the coins | mean +9.824, p10 +0.925, 2 lost money, worst drawdown 30.9% |
 | 9 start hours (0 to 18) | mean +10.39, worst +5.86, worst drawdown 37% |
+| 24 other order-failure keys | mean +21.04, worst +16.04, worst drawdown 25.4% |
 
-Two runs give byte-identical action logs.
+Two runs give identical action logs.
 
 ## Tried and rejected
 
-About 55,000 rule cells on price, flow, wallet copying, sell shocks, pyramiding and reclaims came first. None held up across coin folds.
+About 55,000 rule cells on price, flow, wallet copying, sell shocks and reclaims came first. None held up across coin folds.
 
-Ideas from the public dev leader (icantcodefyi/pumpfun-graduation-bot) were tested here, 256 cells: re-entry, a buy volume trigger, an age limit, a top-5 buyer cap, wider stops and full take-profit. None helped. Selling half at 72 SOL and the 4 SOL size carried over.
+Ideas from the public dev leader (icantcodefyi/pumpfun-graduation-bot) were tested here, 256 cells: re-entry, a volume trigger, an age limit, a top-5 buyer cap, wider stops and full take-profit. None helped. Selling half at 72 SOL and the 4 SOL size carried over.
 
 A hard brake at a 35% drawdown was dropped: started at hour 12, it locked the bot out after an early losing run (-1.80 SOL against +5.86 with the guard).
 
 ## Limits
 
-A few runners make most of the profit, and the launch-group filter was found on the same window it is tested on. A day that opens with a losing run draws down 35 to 37% before recovering. A final day with few runners can end near zero or negative.
+A few runners make most of the profit, and the launch-group filter was found on the same window it is tested on. The dev key for failed orders is a lucky one (+23.8 against a +21.0 mean). A day that opens with a losing run draws down 34 to 37%. A day with few runners can end near zero or negative.
